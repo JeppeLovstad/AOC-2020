@@ -2260,4 +2260,4 @@ sovwpm
 msvrpwdf'
 
 select s 
-FROM #test
+FROM #tes
