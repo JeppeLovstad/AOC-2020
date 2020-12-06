@@ -1,9 +1,12 @@
+drop table if exists #test
+create table #test (id int identity, s varchar(500))
+
+insert into #test
 select '
 l
 l
 vqb
 ' as s
-into #test
 union all select '
 zrbnqykcsxjm
 rszkqdmjbnx
@@ -2257,7 +2260,208 @@ wmfpvn
 whbzmvjplc
 vwpsmk
 sovwpm
-msvrpwdf'
+msvrpwdf'   
 
-select s 
-FROM #tes
+drop table if exists #CleanedInput
+select
+    trim(' -' from 
+            replace(
+                    replace(
+                        replace(s, char(10),'-'),
+                    char(13), '' ),
+            ' ',  '-')
+        ) as s,
+    s as sOrig,
+    id
+into #CleanedInput
+FROM #test
+
+drop table if exists #SplitInput
+select
+    len(s) - len(replace(s, '-', '')) + 1 as groups,
+    s,
+    sOrig,
+    id,
+    [value],
+    ROW_NUMBER() over(partition by id order by id) as rn
+into #SplitInput 
+from #CleanedInput
+cross apply string_split(s, '-')
+order by 1 desc
+
+drop table if exists #SplitGropus
+select a.*, b.value as value2, c.value as value3, d.value  as value4, e.value  as value5
+into #SplitGropus
+from (select value, id, rn, groups from #SplitInput) a
+inner join (select value, id, rn, groups from #SplitInput) b on a.id = b.id and a.rn = b.rn + 1 
+inner join (select value, id, rn, groups from #SplitInput) c on a.id = c.id and b.rn = c.rn + 1 
+inner join (select value, id, rn, groups from #SplitInput) d on a.id = d.id and c.rn = d.rn + 1 
+inner join (select value, id, rn, groups from #SplitInput) e on a.id = e.id and d.rn = e.rn + 1 
+where a.groups = 5
+
+union all
+
+select a.*, b.value, c.value, d.value, null--e.value
+from (select value, id, rn, groups from #SplitInput) a
+inner join (select value, id, rn, groups from #SplitInput) b on a.id = b.id and a.rn = b.rn + 1 
+inner join (select value, id, rn, groups from #SplitInput) c on a.id = c.id and b.rn = c.rn + 1 
+inner join (select value, id, rn, groups from #SplitInput) d on a.id = d.id and c.rn = d.rn + 1 
+where a.groups = 4
+
+union all
+
+select a.*, b.value, c.value, null, null--e.value
+from (select value, id, rn, groups from #SplitInput) a
+inner join (select value, id, rn, groups from #SplitInput) b on a.id = b.id and a.rn = b.rn + 1 
+inner join (select value, id, rn, groups from #SplitInput) c on a.id = c.id and b.rn = c.rn + 1 
+where a.groups = 3
+
+union all
+
+select a.*, b.value, null, null, null--e.value
+from (select value, id, rn, groups from #SplitInput) a
+inner join (select value, id, rn, groups from #SplitInput) b on a.id = b.id and a.rn = b.rn + 1 
+where a.groups = 2
+
+union all
+
+select a.*, null, null, null, null--e.value
+from (select value, id, rn, groups from #SplitInput) a
+where a.groups = 1
+
+
+select
+ sum(
+   case when charindex('q', value) > 0 and charindex('q', value2) > 0 and charindex('q', value3) > 0 and charindex('q', value4) > 0 and charindex('q', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('w', value) > 0 and charindex('w', value2) > 0 and charindex('w', value3) > 0 and charindex('w', value4) > 0 and charindex('w', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('e', value) > 0 and charindex('e', value2) > 0 and charindex('e', value3) > 0 and charindex('e', value4) > 0 and charindex('e', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('r', value) > 0 and charindex('r', value2) > 0 and charindex('r', value3) > 0 and charindex('r', value4) > 0 and charindex('r', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('t', value) > 0 and charindex('t', value2) > 0 and charindex('t', value3) > 0 and charindex('t', value4) > 0 and charindex('t', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('y', value) > 0 and charindex('y', value2) > 0 and charindex('y', value3) > 0 and charindex('y', value4) > 0 and charindex('y', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('u', value) > 0 and charindex('u', value2) > 0 and charindex('u', value3) > 0 and charindex('u', value4) > 0 and charindex('u', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('i', value) > 0 and charindex('i', value2) > 0 and charindex('i', value3) > 0 and charindex('i', value4) > 0 and charindex('i', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('o', value) > 0 and charindex('o', value2) > 0 and charindex('o', value3) > 0 and charindex('o', value4) > 0 and charindex('o', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('p', value) > 0 and charindex('p', value2) > 0 and charindex('p', value3) > 0 and charindex('p', value4) > 0 and charindex('p', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('a', value) > 0 and charindex('a', value2) > 0 and charindex('a', value3) > 0 and charindex('a', value4) > 0 and charindex('a', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('s', value) > 0 and charindex('s', value2) > 0 and charindex('s', value3) > 0 and charindex('s', value4) > 0 and charindex('s', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('d', value) > 0 and charindex('d', value2) > 0 and charindex('d', value3) > 0 and charindex('d', value4) > 0 and charindex('d', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('f', value) > 0 and charindex('f', value2) > 0 and charindex('f', value3) > 0 and charindex('f', value4) > 0 and charindex('f', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('g', value) > 0 and charindex('g', value2) > 0 and charindex('g', value3) > 0 and charindex('g', value4) > 0 and charindex('g', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('h', value) > 0 and charindex('h', value2) > 0 and charindex('h', value3) > 0 and charindex('h', value4) > 0 and charindex('h', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('j', value) > 0 and charindex('j', value2) > 0 and charindex('j', value3) > 0 and charindex('j', value4) > 0 and charindex('j', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('k', value) > 0 and charindex('k', value2) > 0 and charindex('k', value3) > 0 and charindex('k', value4) > 0 and charindex('k', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('l', value) > 0 and charindex('l', value2) > 0 and charindex('l', value3) > 0 and charindex('l', value4) > 0 and charindex('l', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('z', value) > 0 and charindex('z', value2) > 0 and charindex('z', value3) > 0 and charindex('z', value4) > 0 and charindex('z', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('x', value) > 0 and charindex('x', value2) > 0 and charindex('x', value3) > 0 and charindex('x', value4) > 0 and charindex('x', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('c', value) > 0 and charindex('c', value2) > 0 and charindex('c', value3) > 0 and charindex('c', value4) > 0 and charindex('c', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('v', value) > 0 and charindex('v', value2) > 0 and charindex('v', value3) > 0 and charindex('v', value4) > 0 and charindex('v', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('b', value) > 0 and charindex('b', value2) > 0 and charindex('b', value3) > 0 and charindex('b', value4) > 0 and charindex('b', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('n', value) > 0 and charindex('n', value2) > 0 and charindex('n', value3) > 0 and charindex('n', value4) > 0 and charindex('n', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('m', value) > 0 and charindex('m', value2) > 0 and charindex('m', value3) > 0 and charindex('m', value4) > 0 and charindex('m', value5) > 0 and a.groups = 5 then 1 else 0 end +
+   case when charindex('q', value) > 0 and charindex('q', value2) > 0 and charindex('q', value3) > 0 and charindex('q', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('w', value) > 0 and charindex('w', value2) > 0 and charindex('w', value3) > 0 and charindex('w', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('e', value) > 0 and charindex('e', value2) > 0 and charindex('e', value3) > 0 and charindex('e', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('r', value) > 0 and charindex('r', value2) > 0 and charindex('r', value3) > 0 and charindex('r', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('t', value) > 0 and charindex('t', value2) > 0 and charindex('t', value3) > 0 and charindex('t', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('y', value) > 0 and charindex('y', value2) > 0 and charindex('y', value3) > 0 and charindex('y', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('u', value) > 0 and charindex('u', value2) > 0 and charindex('u', value3) > 0 and charindex('u', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('i', value) > 0 and charindex('i', value2) > 0 and charindex('i', value3) > 0 and charindex('i', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('o', value) > 0 and charindex('o', value2) > 0 and charindex('o', value3) > 0 and charindex('o', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('p', value) > 0 and charindex('p', value2) > 0 and charindex('p', value3) > 0 and charindex('p', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('a', value) > 0 and charindex('a', value2) > 0 and charindex('a', value3) > 0 and charindex('a', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('s', value) > 0 and charindex('s', value2) > 0 and charindex('s', value3) > 0 and charindex('s', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('d', value) > 0 and charindex('d', value2) > 0 and charindex('d', value3) > 0 and charindex('d', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('f', value) > 0 and charindex('f', value2) > 0 and charindex('f', value3) > 0 and charindex('f', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('g', value) > 0 and charindex('g', value2) > 0 and charindex('g', value3) > 0 and charindex('g', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('h', value) > 0 and charindex('h', value2) > 0 and charindex('h', value3) > 0 and charindex('h', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('j', value) > 0 and charindex('j', value2) > 0 and charindex('j', value3) > 0 and charindex('j', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('k', value) > 0 and charindex('k', value2) > 0 and charindex('k', value3) > 0 and charindex('k', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('l', value) > 0 and charindex('l', value2) > 0 and charindex('l', value3) > 0 and charindex('l', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('z', value) > 0 and charindex('z', value2) > 0 and charindex('z', value3) > 0 and charindex('z', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('x', value) > 0 and charindex('x', value2) > 0 and charindex('x', value3) > 0 and charindex('x', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('c', value) > 0 and charindex('c', value2) > 0 and charindex('c', value3) > 0 and charindex('c', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('v', value) > 0 and charindex('v', value2) > 0 and charindex('v', value3) > 0 and charindex('v', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('b', value) > 0 and charindex('b', value2) > 0 and charindex('b', value3) > 0 and charindex('b', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('n', value) > 0 and charindex('n', value2) > 0 and charindex('n', value3) > 0 and charindex('n', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('m', value) > 0 and charindex('m', value2) > 0 and charindex('m', value3) > 0 and charindex('m', value4) > 0 and a.groups = 4 then 1 else 0 end +
+   case when charindex('q', value) > 0 and charindex('q', value2) > 0 and charindex('q', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('w', value) > 0 and charindex('w', value2) > 0 and charindex('w', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('e', value) > 0 and charindex('e', value2) > 0 and charindex('e', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('r', value) > 0 and charindex('r', value2) > 0 and charindex('r', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('t', value) > 0 and charindex('t', value2) > 0 and charindex('t', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('y', value) > 0 and charindex('y', value2) > 0 and charindex('y', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('u', value) > 0 and charindex('u', value2) > 0 and charindex('u', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('i', value) > 0 and charindex('i', value2) > 0 and charindex('i', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('o', value) > 0 and charindex('o', value2) > 0 and charindex('o', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('p', value) > 0 and charindex('p', value2) > 0 and charindex('p', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('a', value) > 0 and charindex('a', value2) > 0 and charindex('a', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('s', value) > 0 and charindex('s', value2) > 0 and charindex('s', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('d', value) > 0 and charindex('d', value2) > 0 and charindex('d', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('f', value) > 0 and charindex('f', value2) > 0 and charindex('f', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('g', value) > 0 and charindex('g', value2) > 0 and charindex('g', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('h', value) > 0 and charindex('h', value2) > 0 and charindex('h', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('j', value) > 0 and charindex('j', value2) > 0 and charindex('j', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('k', value) > 0 and charindex('k', value2) > 0 and charindex('k', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('l', value) > 0 and charindex('l', value2) > 0 and charindex('l', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('z', value) > 0 and charindex('z', value2) > 0 and charindex('z', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('x', value) > 0 and charindex('x', value2) > 0 and charindex('x', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('c', value) > 0 and charindex('c', value2) > 0 and charindex('c', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('v', value) > 0 and charindex('v', value2) > 0 and charindex('v', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('b', value) > 0 and charindex('b', value2) > 0 and charindex('b', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('n', value) > 0 and charindex('n', value2) > 0 and charindex('n', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('m', value) > 0 and charindex('m', value2) > 0 and charindex('m', value3) > 0 and a.groups = 3 then 1 else 0 end +
+   case when charindex('q', value) > 0 and charindex('q', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('w', value) > 0 and charindex('w', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('e', value) > 0 and charindex('e', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('r', value) > 0 and charindex('r', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('t', value) > 0 and charindex('t', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('y', value) > 0 and charindex('y', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('u', value) > 0 and charindex('u', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('i', value) > 0 and charindex('i', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('o', value) > 0 and charindex('o', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('p', value) > 0 and charindex('p', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('a', value) > 0 and charindex('a', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('s', value) > 0 and charindex('s', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('d', value) > 0 and charindex('d', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('f', value) > 0 and charindex('f', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('g', value) > 0 and charindex('g', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('h', value) > 0 and charindex('h', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('j', value) > 0 and charindex('j', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('k', value) > 0 and charindex('k', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('l', value) > 0 and charindex('l', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('z', value) > 0 and charindex('z', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('x', value) > 0 and charindex('x', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('c', value) > 0 and charindex('c', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('v', value) > 0 and charindex('v', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('b', value) > 0 and charindex('b', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('n', value) > 0 and charindex('n', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('m', value) > 0 and charindex('m', value2) > 0 and a.groups = 2 then 1 else 0 end +
+   case when charindex('q', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('w', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('e', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('r', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('t', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('y', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('u', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('i', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('o', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('p', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('a', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('s', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('d', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('f', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('g', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('h', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('j', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('k', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('l', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('z', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('x', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('c', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('v', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('b', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('n', value) > 0 and a.groups = 1 then 1 else 0 end +
+   case when charindex('m', value) > 0 and a.groups = 1 then 1 else 0 end 
+   )
+from #SplitGropus a
+
